@@ -1,0 +1,9 @@
+---
+layout: fancy
+---
+
+**Me random notes :)**
+
+- Zig
+  - [new Io interfaces](/my-notes/zig-io)
+  - [when to use `free()` and `destroy()`](/my-notes/mem-free-destroy)

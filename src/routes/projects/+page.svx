@@ -1,0 +1,8 @@
+---
+layout: fancy
+---
+
+# List of stuff i made
+
+- [Zig Note CLI](/projects/zig-cli)
+- [Kode-Go!](/projects/kodego)

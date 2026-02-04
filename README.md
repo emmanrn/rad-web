@@ -35,4 +35,6 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
+As for me im using bun as my package manager
+
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

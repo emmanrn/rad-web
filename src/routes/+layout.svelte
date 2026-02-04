@@ -1,9 +1,14 @@
 <script lang="ts">
-	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
-
-	let { children } = $props();
+	import MainHeader from '$lib/components/MainHeader.svelte';
+	import ThemeInitializer from '$lib/components/ThemeInitializer.svelte';
+	import '../app.css';
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{@render children()}
+<ThemeInitializer>
+	<div class="mx-auto flex max-w-7xl gap-2">
+		<MainHeader />
+		<main class=" prose max-w-none grow overflow-x-auto pt-22 pb-8 dark:prose-invert">
+			<slot />
+		</main>
+	</div>
+</ThemeInitializer>

@@ -1,0 +1,19 @@
+---
+layout: fancy
+title: 'When to use free() and destroy()'
+imgUrl: ''
+publishedAt: '2026-01-28'
+---
+
+#### When to use `free()` and `destroy()`
+This is very simple now, when using `create()`, to free that memory you must call `destroy()` after *(as it said in the docs)* if you used `alloc()` to free that, you must use `free()`
+
+**What matters is how the memory was allocated**
+
+Keep in mind this rule:
+```
+allocator.create(T)  <───▶  allocator.destroy(ptr)
+allocator.alloc(T,n) <───▶  allocator.free(slice)
+```
+- One thing → `create()/destroy()`
+- Many things → `alloc()/free()`

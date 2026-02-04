@@ -1,0 +1,76 @@
+---
+layout: fancy
+title: 'Kode-Go'
+imgUrl: ''
+publishedAt: '2026-01-31'
+summary: 'Game made for thesis.'
+---
+
+
+
+Kode-Go! is a 2D platformer game, that also teaches coding by solving coding problems along the way to progress through the game.
+
+Players come across terminals that they have to solve in order to progress to the next level. Along the way they can practice coding problems and find skins before solving
+the Final Terminal.
+
+Tech Stack:
+- Unity
+
+
+The following is the curriculum of the lessons for the game:
+- Level 1: **“The Snake Awakens”** (Python Syntax & Game Tutorial)
+	This level introduces basic Python syntax, the print() function, and simple error fixing while serving as the game’s tutorial. Players learn core gameplay mechanics, interact with NPCs, use Practice, Debug, and Final terminals, and write their first line of Python code.
+- Level 2: **“The Vault of Variables”** (Variables and Data Types)
+	This level focuses on creating and naming variables and using basic Python data types such as integers, strings, floats, and booleans. Players learn how to store data and display results using print().
+- Level 3: **“The Power of Symbols”** (Operators and Expressions)
+	This level teaches arithmetic, comparison, and logical operators to perform calculations and make logical decisions. Players learn how to combine values and conditions to control program behavior.
+- Level 4: **“The Path of Decisions”** (Conditional Statements)
+	This level introduces if, elif, and else statements, including nested conditionals. Players learn how to make programs respond differently based on conditions and boolean expressions.
+- Level 5: **“The Endless Loop”** (Loops)
+	This level covers for and while loops, the range() function, and loop controls such as break and continue. Players learn how to repeat actions efficiently and manage looping logic.
+- Level 6: **“The Function Forge”** (Functions)
+	This level focuses on defining and using functions with parameters, arguments, and return values. Players also learn about variable scope and how to organize reusable, modular code.
+
+## Game Core Loop:
+
+Platforming and Code Collection: Players choose an unlocked level and navigate a platforming environment, performing actions like moving, jumping, dashing, wall jumps (on yellow walls), and passing through platforms. They collect code blocks required to complete the Final Terminal and unlock the next level. Standard gameplay actions use normal game controls, while coding is practiced in dedicated terminals.
+
+## Terminal System
+- **Practice Terminal**: Unlimited, penalty-free fill-in-the-blank exercises.
+- **Debug Terminal**: Identifying and correcting incorrect or misplaced code blocks.
+- **Final Terminal**: Drag-and-drop code blocks to solve problems, with a life system penalizing errors or incorrect outputs.
+- **Progression and Rewards**: Completing levels grants experience points, advancing ranks from “Rookie” onward. Secret character skins encourage exploration and repeated engagement.
+- **Python Integration and Learning Structure**: Each level acts as a learning module for a specific Python concept, reinforced across terminals. Mastery is demonstrated in the Final Terminal. Additional features like trivia and debugging challenges support systematic skill development from basic syntax to advanced topics.
+## Story Setting and Mission
+The game is set in a city powered by a core system. Players wake in a surreal digital world, guided by a damaged wrist console, and must restore parts of the city while recovering fragments of memory. Each level introduces fundamental Python concepts—such as conditionals, loops, and functions—integrated with quizzes to test knowledge.
+
+### The one thing I was proud of
+## The Dialogue System
+
+Now you see this dialogue system, we made it from scratch *(I did follow a tutorial to make this happen but, hey they helped tho so thanks to them we wouldnt actually be able to do this game)*
+[Link to the tutorial](https://www.youtube.com/playlist?list=PLGSox0FgA5B58Ki4t4VqAPDycEpmkBd0i)
+
+This dialogue system we built is like a mini visual novel engine, and it's sooooo easy to add more dialogues to it.
+
+Because you just add a .txt file to the directory the system is reading all the dialogues from and it will parse the file, because it has specific syntaxes and it will add the dialogues to the game with the lines already setup for the characters speaking.
+
+Example:
+
+```bash
+Player: Hello, My name is Player, and I like coding.
+narrator: Say hello to player guys.
+# ... and so on
+```
+
+soo yeh it has this specific syntax that you have to write and then it will just parse it into readable data for the game, and then I just make the dialogues display it to the game!
+
+### Command System
+Now there's also a command system for it. You put the commands in the .txt files as well!
+
+The syntax for it has mixed like attribute-like commands:
+```bash
+Player.Show() # show player first
+Player: Wow! So cool! # player speaks
+```
+
+

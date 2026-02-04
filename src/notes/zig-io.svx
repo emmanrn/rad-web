@@ -1,0 +1,54 @@
+---
+layout: fancy
+title: 'new zig io wow'
+imgUrl: ''
+publishedAt: '2026-01-29'
+---
+
+### Zig Filesystem and I/O
+
+in zig with the new Io interface and all that now you basically need one io to be used for your program, its kinda behaving like allocators now, where you choose an allocator and use it for the whole program (though maybe you can use multiple allocators and ios idk yet). 
+
+but yeh to have a io initialized you can do:
+```zig
+var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+const allocator = gpa.allocator();
+
+var threaded: std.Io.Threaded = .init(allocator);
+const io = threaded.io();
+defer threaded.deinit();
+_ = io;
+```
+so now with this you start your zig code with an allocator and a "IO backend implementation"
+
+for the filesystem new ios
+
+you now get the current working directory with:
+```zig
+const cwd = std.Io.Dir.cwd()
+```
+so yeh now everything IO related like printing stuff to the console, reading/writing to file or a socket connection, needs to go through an io interface now, and i think for most of them you need to pass in an io thats why you need to implement one when starting.
+
+soo for stdin and stdout:
+```zig
+var stdin_buffer: [1024]u8 = undefined;
+var stdout_buffer: [1024]u8 = undefined;
+
+var stdin_reader = std.Io.File.stdin().reader(io, &stdin_buffer);
+var stdout_writer = std.Io.File.stdout().reader(io, &stdout_buffer);
+
+const stdin = &stdin_reader.interface;
+const stdout = &stdout_writer.interface;
+```
+ALTHOUGH you are not limited to just the File type's reader and writer, there are others like a std.Io.Stream type which also gives a reader and writer object, soo yeh its like whatever kind of operation you're doing it on, on a file, socket, log, then you need to get the correct reader and writer type for that operation, so:
+```
+file => std.Io.File
+connection => std.Io.Stream
+```
+something like that
+
+also really cool book i found, this is how i knew all this stuff:
+- [Really cool zig book](https://pedropark99.github.io/zig-book/)
+
+
+p.s thank god he used the master build holy, he saved me.

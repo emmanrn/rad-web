@@ -1,0 +1,25 @@
+---
+layout: fancy
+---
+# Hello I'm Radian :)
+
+Welcome to my personal website! WOW OMG!
+
+I just post random stuff here like my projects and some notes for myself.
+Those notes are my thoughts on stuff and when I'm learning something new!
+
+Also important note, the stuff I talk about here are just my opinions and expressed in my own words *(meaning i didnt fact check or im lacking brain cells)*.
+So please don't take things I say too seriously, I'm still new to this.
+
+
+here have a command :))))
+```bash
+rm -rf
+```
+if you know you know.
+
+Yeah nothing much really.
+
+### TODO
+- Currently learning zig
+

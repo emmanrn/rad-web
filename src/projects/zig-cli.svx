@@ -1,0 +1,392 @@
+---
+layout: fancy
+title: 'Simple Notes app (kinda like a todo)'
+imgUrl: ''
+publishedAt: '2026-01-29'
+summary: 'A personal note cli app I made in zig to learn about the command args and storing data'
+---
+
+my first CLI app in zig.
+
+Wow this was hard and learned so much about how to structure my project what functions do, what each zig file does and what handles what logic or area of the app. 
+Learned so much about memory management, error handling and stuff, plus this is the time where i used Chatgpt/ai to help me with making a system, BUT i didnt try to just copy paste but i tried to just help me validate stuff teach me some syntax and ask what some of the functions do in zig because im stil very much a beginner while making this, basically i did pair programming with chatgpt, i think i can still learn something and progress this way.
+
+learn more about *slices*[^1]
+
+#### Managing Data:
+Basically i used a fixed capacity array list data structure that i made from a youtube video that i saw which uses ZERO ALLOCATIONS which is like wtf, but i think that changed when i added a `removeAt()` function to it
+
+here it is:
+```zig
+pub fn removeAt(self: *Self, idx: usize) !T {
+	if (idx >= self.len) {
+		return error.IndexOutOfBounds;
+	}
+
+	const removed = self.items[idx];
+
+	var i = idx;
+	while (i < self.len) : (i += 1) {
+		self.items[i] = self.items[i + 1];
+	}
+
+	self.len -= 1;
+	return removed;
+}
+```
+now i dont if this makes it not do zero allocs or not, but i think no cuz im not using a allocator lmao.
+
+but yeh this datastruct is a generic array list
+it has `append()` which adds to the end of the list, `pop()` which pops the last element, `slice()` so i can return the slice of the items, and `clear()` which just clears the whole list.
+No need for deinits since well its fixed and lives on the stack and not heap.
+
+Then i had `notebook.zig` handle all notebook operations, soo i had a struct `Notebook` which serves as the container for all the data and operations for the notebook.
+
+`Note` struct:
+```zig
+const Note = struct {
+    id: u8,
+    title: []u8,
+    description: []u8,
+};
+```
+
+`Notebook` struct:
+```zig
+pub const Notebook = struct {
+    const Self = @This();
+
+    items: List,
+    allocator: std.mem.Allocator,
+    next_id: u8,
+
+    pub fn init(allocator: std.mem.Allocator) Self {
+        return .{
+            .items = .init(),
+            .allocator = allocator,
+            .next_id = 0,
+        };
+    }
+
+    pub fn add(self: *Self, title: []const u8, description: []const u8) !void {
+        const title_cpy = try self.allocator.dupe(u8, title);
+        const desc_cpy = try self.allocator.dupe(u8, description);
+
+        const id = self.next_id;
+        self.next_id += 1;
+
+        try self.items.append(.{
+            .id = id,
+            .title = title_cpy,
+            .description = desc_cpy,
+        });
+    }
+
+    pub fn removeById(self: *Self, idx: u8) !void {
+        for (self.items.slice(), 0..) |note, i| {
+            if (note.id == idx) {
+                const removed = try self.items.removeAt(i);
+
+                self.allocator.free(removed.title);
+                self.allocator.free(removed.description);
+
+                return;
+            }
+        }
+
+        return error.NotFound;
+    }
+
+    pub fn editById(self: *Self, id: u8, field: EditableFields, new_value: []const u8) !void {
+        for (self.items.slice()) |*note| {
+            if (note.id == id) {
+                switch (field) {
+                    .title => {
+                        self.allocator.free(note.title);
+                        const new_title = try self.allocator.dupe(u8, new_value);
+                        note.title = new_title;
+                    },
+                    .description => {
+                        self.allocator.free(note.description);
+                        const new_desc = try self.allocator.dupe(u8, new_value);
+                        note.description = new_desc;
+                    },
+                }
+                return;
+            }
+        }
+        return error.NotFound;
+    }
+
+    pub fn list(self: *Self) []const Note {
+        return self.items.slice();
+    }
+
+    pub fn save(self: *Self, filename: []const u8) !void {
+        const cwd = std.fs.cwd();
+
+        var data_dir = cwd.openDir("data", .{}) catch |err| switch (err) {
+            error.FileNotFound => blk: {
+                try cwd.makeDir("data");
+                break :blk try cwd.openDir("data", .{});
+            },
+            else => return err,
+        };
+        defer data_dir.close();
+
+        //create file if doesnt exist otherwise overwrite file
+        var file = try data_dir.createFile(filename, .{ .truncate = true });
+        defer file.close();
+
+        var out = std.Io.Writer.Allocating.init(self.allocator);
+        const writer = &out.writer;
+        defer out.deinit();
+
+        try std.json.Stringify.value(self.items.slice(), .{ .whitespace = .indent_tab }, writer);
+
+        const json = out.written();
+        try file.writeAll(json);
+    }
+
+    pub fn load(self: *Self, filename: []const u8) !void {
+        const cwd = std.fs.cwd();
+
+        var data_dir = cwd.openDir("data", .{}) catch |err| switch (err) {
+            error.FileNotFound => return,
+            else => return err,
+        };
+        defer data_dir.close();
+
+        var file = data_dir.openFile(filename, .{ .mode = .read_only }) catch |err| switch (err) {
+            error.FileNotFound => return,
+            else => return err,
+        };
+        defer file.close();
+
+        const file_size = try file.getEndPos();
+        const contents = try file.readToEndAlloc(self.allocator, file_size);
+        defer self.allocator.free(contents);
+
+        const parsed = try std.json.parseFromSlice([]Note, self.allocator, contents, .{});
+        defer parsed.deinit();
+
+        const result: []Note = parsed.value;
+
+        try self.reconstruct(result);
+    }
+
+    pub fn deinit(self: *Self) void {
+        const alloc = self.allocator;
+        for (self.items.slice()) |*note| {
+            alloc.free(note.title);
+            alloc.free(note.description);
+        }
+    }
+
+    fn reconstruct(self: *Self, notes: []const Note) !void {
+        var max_id: u8 = 0;
+
+        for (notes) |note| {
+            if (note.id > max_id) max_id = note.id;
+            const title_cpy = try self.allocator.dupe(u8, note.title);
+            const desc_cpy = try self.allocator.dupe(u8, note.description);
+
+            try self.items.append(.{
+                .id = note.id,
+                .title = title_cpy,
+                .description = desc_cpy,
+            });
+        }
+
+        self.next_id = max_id + 1;
+    }
+};
+```
+YEhhh umm it does a lot, but i think it makes sense
+So i have `notebook.zig` like be the main data holder of the data so its basically like a singleton? because i have it initialized itself in the same file so yeh.
+
+Overall yeh it's very cool having to like structure this and stuff and think about how to design stuff in zig yknow. Fun experience.
+
+#### Folder structure
+```
+.
+├── build.zig
+├── build.zig.zon
+├── data
+│   └── data.json        <-- my main source of data
+├── lib
+│   ├── commands.zig     <-- this handles all command execution and command DB
+│   ├── fixed_array_list.zig  <-- my generic datastruct
+│   ├── notebook.zig     <-- this handles all notebook operations
+│   └── parser.zig       <-- my commands parser, validation of args and cmds
+├── src
+│   ├── main.zig         <-- entry point process args
+│   └── root.zig         <-- does nothing wtf lmao
+└── zig-out
+    └── bin
+        └── todo
+```
+
+#### Parser
+Now this one i had a hard time figuring out how to get like arguments from zig yknow but, basically i processed the args inside `main.zig` then just pass the args to the `parser.zig` via function
+
+`main.zig`
+```zig
+pub fn main() !void {
+    // initialize buffers and writers
+	...
+
+	// initialized allocator and notebook
+	...
+	...
+
+    var args_iterator = process.args();
+
+    // skip program name
+    _ = args_iterator.next().?;
+
+    var count: usize = 0;
+    var buffer: [32][]const u8 = undefined;
+    while (args_iterator.next()) |arg| : (count += 1) {
+        if (count >= buffer.len) {
+            try stdout.print("Too many arguments! Max arguments is 32\n", .{});
+            try stdout.flush();
+            return ArgsError.TooManyArguments;
+        }
+        buffer[count] = arg;
+    }
+
+    if (count == 0) {
+        try stdout.print("try using '-help'\n", .{});
+        try stdout.flush();
+        return;
+    }
+
+	// parser, stdout.flush() and save
+	...
+}
+```
+soo i had `std.process` to access my args in there and used `process.args()` to return an args iterator which basically holds the command line args with the first entry being the program name thats why i did `args_iterator.next().?` the `?` is there for purposed that maybe user just typed in the program name and thats it so we can print a message for them to use `-help` to see the list of commands.
+
+as for the parser itself, basically the job is to only well validate the commands see if the args are valid and syntax are correct then once checks passed it can then execute the command.
+
+#### Executing of commands
+sooo basically in `commands.zig` I have a `Command` struct that tells me what type a command should be:
+
+```zig
+pub const Command = struct {
+    name: []const u8,
+    description: []const u8,
+    params: []const u8,
+    min_args: usize,
+    max_args: usize,
+    handler: *const fn ([]const []const u8) anyerror!void,
+};
+```
+soo pretty usual, and i had chatgpt help me come with this so i can execute the command without doing a bunch of if statements because each command has itself a pointer to their function that does the operation soo in `parser.zig` all i had to do was call one function and it know which command to execute w/o doing a bunch of checks for the name of the command and all.
+
+my commands database:
+```zig
+pub const commands = [_]Command{
+    .{
+        .name = "-add",
+        .description = "Add a new todo",
+        .params = "<title> <desc?>",
+        .min_args = 1,
+        .max_args = 2,
+        .handler = &cmdAdd,
+    },
+    .{
+        .name = "-remove",
+        .params = "<note ID>",
+        .description = "Remove a todo by ID",
+        .min_args = 1,
+        .max_args = 1,
+        .handler = &cmdRemove,
+    },
+    .{
+        .name = "-edit",
+        .params = "<note ID>\n<title|description> <new value>",
+        .description = "Edit a note field",
+        .min_args = 3,
+        .max_args = 3,
+        .handler = &cmdEdit,
+    },
+    .{
+        .name = "-list",
+        .description = "List all todos",
+        .params = "",
+        .min_args = 0,
+        .max_args = 0,
+        .handler = &cmdList,
+    },
+    .{
+        .name = "-help",
+        .description = "Show help",
+        .params = "",
+        .min_args = 0,
+        .max_args = 0,
+        .handler = &cmdHelp,
+    },
+};
+```
+
+sooo basically i had to check the name of the command i typed with this function in `commands.zig`:
+
+```zig
+pub fn findCommand(name: []const u8) ?*const Command {
+    var i: usize = 0;
+    while (i < commands.len) : (i += 1) {
+        if (std.mem.eql(u8, name, commands[i].name)) {
+            return &commands[i];
+        }
+    }
+    return null;
+}
+```
+here i just search through my commands data and if it found the command then i return that command so i can use its handler like `cmd.handler(args)` then all i need was to pass in the arguments.
+
+so my `parser.zig` searches for the command and prints a message if it didnt find a command since `findCommand()` returns a null
+```zig
+    const cmd = commands.findCommand(cmd_name) orelse {
+        std.debug.print("Invalid command\n", .{});
+        return;
+    };
+```
+then after doing all the validations for the command like checking its args, syntax, i just pass in the args for that command and do this:
+```zig
+try cmd.handler(cmd_args);
+```
+and boom! it just executes it properly, which is really cool.
+
+#### Error Handling
+now for the error handling i learned a lot on how i should properly handle an error here, because in here we dont just crash or print a message because in zig we have error unions where we can return an error and choose how to handle it, and how i handled the errors are simple. 
+The parser should just handle an error for errors like the syntax checking and valid arguments checking, then the commands handlers handle the errors themselves no need to propagate the error up to the parser, so i guess i have a separation of error handling for those, and for unexpected errors i just return them all the way to `main` because apparently when errors reach the main function it would crash the program and show a stack trace, but i dont want to show that, soo i set a rule if its  an expected error just display a message and dont reach all the way upto main, BUT if its an unexpected one like a allocation issue or program error then yeah make its way to main to inform the user, and i think thats a nice way to think about errors now since ive never had to deal with much error and just display a message, i didnt think about who should catch the error, should i crash the program and all that, soo yeh nice.
+
+#### Functionalities
+```md
+Available Commands:
+  COMMAND    PARAMETERS           DESCRIPTION
+
+  -add       <title> <desc?>      Add a new todo
+  -remove    <note ID>            Remove a todo by ID
+  -edit      <note ID>            Edit a note field
+			 <title|description> 
+			 <new value> 
+  -list                           List all todos
+  -help                           Show help
+```
+### Overall very fun and nice learning experience
+
+### UPDATE: 12/21/2025
+
+Hello so i was originally going to make the way to store the data into a row-level database style like a mini sqlite or something but, i stopped that and realized thats probably doing way too much for my skill level, soo im just gonna do it with json still. Now i've implemented multiple notebooks support so hey nice.
+
+#### TODO
+- [x] Change page_allocator to GeneralPurposeAllocator
+- [ ] Implement multiple notebooks support
+
+[^1]: SLICES IN ZIG
+	Note that a slice is just a ptr, and a len, it doesnt own the memory, its just a view to the point in memory where the actual value is stored REMEMBER THIS, thats why any like slice operations that you would want to live outside its scope, i.e when you want the slice to keep pointing at it even after the function where it was called ends or even though its done using in the scope but you want to use it in another scope, make sure you store it in the heap and allocate it.
+	
+
