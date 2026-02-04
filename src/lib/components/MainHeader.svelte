@@ -4,6 +4,8 @@
 	import GithubIcon from './svg/GithubIcon.svelte';
 	import HamburgerIcon from './svg/HamburgerIcon.svelte';
 
+	import { resolve } from '$app/paths';
+
 	let menuOpen = false;
 </script>
 
@@ -29,16 +31,22 @@
 			</li>
 
 			<li>
-				<a class="prose dark:prose-invert" href="/" on:click={() => (menuOpen = false)}>Radd</a>
-			</li>
-			<li>
-				<a class="prose dark:prose-invert" href="/projects" on:click={() => (menuOpen = false)}
-					>projects</a
+				<a class="prose dark:prose-invert" href={resolve('/')} on:click={() => (menuOpen = false)}
+					>Radd</a
 				>
 			</li>
 			<li>
-				<a class="prose dark:prose-invert" href="/my-notes" on:click={() => (menuOpen = false)}
-					>me notes</a
+				<a
+					class="prose dark:prose-invert"
+					href={resolve('/projects')}
+					on:click={() => (menuOpen = false)}>projects</a
+				>
+			</li>
+			<li>
+				<a
+					class="prose dark:prose-invert"
+					href={resolve(`/my-notes`)}
+					on:click={() => (menuOpen = false)}>me notes</a
 				>
 			</li>
 		</ul>
