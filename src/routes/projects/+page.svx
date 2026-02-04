@@ -2,7 +2,12 @@
 layout: fancy
 ---
 
+<script lang="ts">
+	import { resolve } from '$app/paths';
+
+</script>
+
 # List of stuff i made
 
-- [Zig Note CLI](/projects/zig-cli)
-- [Kode-Go!](/projects/kodego)
+- [Zig Note CLI]({resolve('/projects/zig-cli')})
+- [Kode-Go!]({resolve('/projects/kodego')})

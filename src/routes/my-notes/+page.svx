@@ -2,8 +2,14 @@
 layout: fancy
 ---
 
+<script lang="ts">
+	import { resolve } from '$app/paths';
+
+</script>
+
 **Me random notes :)**
 
+
 - Zig
-  - [new Io interfaces](/my-notes/zig-io)
-  - [when to use `free()` and `destroy()`](/my-notes/mem-free-destroy)
+  - [new Io interfaces]({resolve('/my-notes/zig-io')})
+  - [when to use `free()` and `destroy()`]({resolve('/my-notes/mem-free-destroy')})
