@@ -66,7 +66,10 @@
 			<DarkModeButton />
 		</li>
 		<li>
-			<a class="hover:text-love dark:hover:text-r-rose-moon prose dark:prose-invert" href="/">
+			<a
+				class="hover:text-love dark:hover:text-r-rose-moon prose dark:prose-invert"
+				href={resolve('/')}
+			>
 				Radd
 			</a>
 		</li>
@@ -74,13 +77,13 @@
 		<li>
 			<a
 				class="hover:text-love dark:hover:text-r-rose-moon prose dark:prose-invert"
-				href="/projects">projects</a
+				href={resolve('/projects')}>projects</a
 			>
 		</li>
 		<li>
 			<a
 				class="hover:text-love dark:hover:text-r-rose-moon prose dark:prose-invert"
-				href="/my-notes">me notes</a
+				href={resolve('/my-notes')}>me notes</a
 			>
 		</li>
 	</ul>
