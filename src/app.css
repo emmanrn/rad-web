@@ -1,7 +1,14 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+/* @config "../tailwind.config.js"; */
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  font-family: 'Junicode';
+  font-weight: 500;
+  font-size: 22px;
+}
 
 @theme {
   --color-dark: #1f1d2e;
@@ -52,19 +59,3 @@
   content: none;
   display: none;
 }
-
-/**/
-/* .prose code { */
-/*   background-color: var(--color-hl-med-dawn); */
-/*   color: var(--color-surface); */
-/*   border-radius: 5px; */
-/*   padding: 2px; */
-/* } */
-/**/
-/**/
-/* .dark.prose code { */
-/*   background-color: var(--color-hl-high); */
-/*   color: var(--color-surface); */
-/*   border-radius: 5px; */
-/*   padding: 2px; */
-/* } */

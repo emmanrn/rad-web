@@ -35,6 +35,14 @@
 					>Radd</a
 				>
 			</li>
+
+			<li>
+				<a
+					class="prose dark:prose-invert"
+					href={resolve('/about')}
+					on:click={() => (menuOpen = false)}>this is me</a
+				>
+			</li>
 			<li>
 				<a
 					class="prose dark:prose-invert"
@@ -73,7 +81,14 @@
 				Radd
 			</a>
 		</li>
-		<li></li>
+		<li>
+			<a
+				class="hover:text-love dark:hover:text-r-rose-moon prose dark:prose-invert"
+				href={resolve('/about')}
+			>
+				this is me
+			</a>
+		</li>
 		<li>
 			<a
 				class="hover:text-love dark:hover:text-r-rose-moon prose dark:prose-invert"

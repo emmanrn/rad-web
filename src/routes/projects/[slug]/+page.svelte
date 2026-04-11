@@ -8,6 +8,6 @@
 </script>
 
 <div>
-	<ProjectHeader {title} {publishedAt} />
+	<ProjectHeader {title} {publishedAt} {summary} />
 	<Content />
 </div>

@@ -1,0 +1,9 @@
+---
+layout: fancy
+title: 'Fuzzy search with Soundex'
+imgUrl: ''
+publishedAt: 'Comming Soon'
+summary: 'A simple fuzzy search tool. This is an educational project for me to learn more C and try out algos'
+---
+
+#### Under construction...

@@ -17,20 +17,6 @@ Tech Stack:
 - Unity
 
 
-The following is the curriculum of the lessons for the game:
-- Level 1: **“The Snake Awakens”** (Python Syntax & Game Tutorial)
-	This level introduces basic Python syntax, the print() function, and simple error fixing while serving as the game’s tutorial. Players learn core gameplay mechanics, interact with NPCs, use Practice, Debug, and Final terminals, and write their first line of Python code.
-- Level 2: **“The Vault of Variables”** (Variables and Data Types)
-	This level focuses on creating and naming variables and using basic Python data types such as integers, strings, floats, and booleans. Players learn how to store data and display results using print().
-- Level 3: **“The Power of Symbols”** (Operators and Expressions)
-	This level teaches arithmetic, comparison, and logical operators to perform calculations and make logical decisions. Players learn how to combine values and conditions to control program behavior.
-- Level 4: **“The Path of Decisions”** (Conditional Statements)
-	This level introduces if, elif, and else statements, including nested conditionals. Players learn how to make programs respond differently based on conditions and boolean expressions.
-- Level 5: **“The Endless Loop”** (Loops)
-	This level covers for and while loops, the range() function, and loop controls such as break and continue. Players learn how to repeat actions efficiently and manage looping logic.
-- Level 6: **“The Function Forge”** (Functions)
-	This level focuses on defining and using functions with parameters, arguments, and return values. Players also learn about variable scope and how to organize reusable, modular code.
-
 ## Game Core Loop:
 
 Platforming and Code Collection: Players choose an unlocked level and navigate a platforming environment, performing actions like moving, jumping, dashing, wall jumps (on yellow walls), and passing through platforms. They collect code blocks required to complete the Final Terminal and unlock the next level. Standard gameplay actions use normal game controls, while coding is practiced in dedicated terminals.

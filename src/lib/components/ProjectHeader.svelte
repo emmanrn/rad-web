@@ -3,18 +3,27 @@
 
 	export let title: string;
 	export let publishedAt: string;
+	export let summary: string;
 </script>
 
-<header class="px-4 pb-12">
+<header class="px-4 pb-8">
 	<div>
 		<h1 class=" mb-4 text-4xl font-extrabold">
 			{title}
 		</h1>
-		<div class="inline-block border-t py-2 text-sm dark:border-gray-700">
-			<span>Published: </span>
-			<time class="font-light" datetime={publishedAt}>
-				{formatPublishedAt(publishedAt)}
-			</time>
+		<div class="flex flex-col">
+			<div class="inline-block border-t py-2 text-sm dark:border-gray-700">
+				<span>Published: </span>
+				<time class="font-light" datetime={publishedAt}>
+					{formatPublishedAt(publishedAt)}
+				</time>
+			</div>
+			<div class="inline-block border-t py-4 dark:border-gray-700">
+				<span class="text-lg">
+					TLDR;
+					{summary}
+				</span>
+			</div>
 		</div>
 	</div>
 </header>

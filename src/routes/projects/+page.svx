@@ -11,3 +11,4 @@ layout: fancy
 
 - [Zig Note CLI]({resolve('/projects/zig-cli')})
 - [Kode-Go!]({resolve('/projects/kodego')})
+- [Fuzzy Search with Soundex in C]({resolve('/projects/fuzzy-search-with-soundex')})

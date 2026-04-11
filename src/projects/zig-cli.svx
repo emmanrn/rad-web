@@ -11,32 +11,9 @@ my first CLI app in zig.
 Wow this was hard and learned so much about how to structure my project what functions do, what each zig file does and what handles what logic or area of the app. 
 Learned so much about memory management, error handling and stuff, plus this is the time where i used Chatgpt/ai to help me with making a system, BUT i didnt try to just copy paste but i tried to just help me validate stuff teach me some syntax and ask what some of the functions do in zig because im stil very much a beginner while making this, basically i did pair programming with chatgpt, i think i can still learn something and progress this way.
 
-learn more about *slices*[^1]
-
 #### Managing Data:
 Basically i used a fixed capacity array list data structure that i made from a youtube video that i saw which uses ZERO ALLOCATIONS which is like wtf, but i think that changed when i added a `removeAt()` function to it
 
-here it is:
-```zig
-pub fn removeAt(self: *Self, idx: usize) !T {
-	if (idx >= self.len) {
-		return error.IndexOutOfBounds;
-	}
-
-	const removed = self.items[idx];
-
-	var i = idx;
-	while (i < self.len) : (i += 1) {
-		self.items[i] = self.items[i + 1];
-	}
-
-	self.len -= 1;
-	return removed;
-}
-```
-now i dont if this makes it not do zero allocs or not, but i think no cuz im not using a allocator lmao.
-
-but yeh this datastruct is a generic array list
 it has `append()` which adds to the end of the list, `pop()` which pops the last element, `slice()` so i can return the slice of the items, and `clear()` which just clears the whole list.
 No need for deinits since well its fixed and lives on the stack and not heap.
 
@@ -60,149 +37,9 @@ pub const Notebook = struct {
     allocator: std.mem.Allocator,
     next_id: u8,
 
-    pub fn init(allocator: std.mem.Allocator) Self {
-        return .{
-            .items = .init(),
-            .allocator = allocator,
-            .next_id = 0,
-        };
-    }
-
-    pub fn add(self: *Self, title: []const u8, description: []const u8) !void {
-        const title_cpy = try self.allocator.dupe(u8, title);
-        const desc_cpy = try self.allocator.dupe(u8, description);
-
-        const id = self.next_id;
-        self.next_id += 1;
-
-        try self.items.append(.{
-            .id = id,
-            .title = title_cpy,
-            .description = desc_cpy,
-        });
-    }
-
-    pub fn removeById(self: *Self, idx: u8) !void {
-        for (self.items.slice(), 0..) |note, i| {
-            if (note.id == idx) {
-                const removed = try self.items.removeAt(i);
-
-                self.allocator.free(removed.title);
-                self.allocator.free(removed.description);
-
-                return;
-            }
-        }
-
-        return error.NotFound;
-    }
-
-    pub fn editById(self: *Self, id: u8, field: EditableFields, new_value: []const u8) !void {
-        for (self.items.slice()) |*note| {
-            if (note.id == id) {
-                switch (field) {
-                    .title => {
-                        self.allocator.free(note.title);
-                        const new_title = try self.allocator.dupe(u8, new_value);
-                        note.title = new_title;
-                    },
-                    .description => {
-                        self.allocator.free(note.description);
-                        const new_desc = try self.allocator.dupe(u8, new_value);
-                        note.description = new_desc;
-                    },
-                }
-                return;
-            }
-        }
-        return error.NotFound;
-    }
-
-    pub fn list(self: *Self) []const Note {
-        return self.items.slice();
-    }
-
-    pub fn save(self: *Self, filename: []const u8) !void {
-        const cwd = std.fs.cwd();
-
-        var data_dir = cwd.openDir("data", .{}) catch |err| switch (err) {
-            error.FileNotFound => blk: {
-                try cwd.makeDir("data");
-                break :blk try cwd.openDir("data", .{});
-            },
-            else => return err,
-        };
-        defer data_dir.close();
-
-        //create file if doesnt exist otherwise overwrite file
-        var file = try data_dir.createFile(filename, .{ .truncate = true });
-        defer file.close();
-
-        var out = std.Io.Writer.Allocating.init(self.allocator);
-        const writer = &out.writer;
-        defer out.deinit();
-
-        try std.json.Stringify.value(self.items.slice(), .{ .whitespace = .indent_tab }, writer);
-
-        const json = out.written();
-        try file.writeAll(json);
-    }
-
-    pub fn load(self: *Self, filename: []const u8) !void {
-        const cwd = std.fs.cwd();
-
-        var data_dir = cwd.openDir("data", .{}) catch |err| switch (err) {
-            error.FileNotFound => return,
-            else => return err,
-        };
-        defer data_dir.close();
-
-        var file = data_dir.openFile(filename, .{ .mode = .read_only }) catch |err| switch (err) {
-            error.FileNotFound => return,
-            else => return err,
-        };
-        defer file.close();
-
-        const file_size = try file.getEndPos();
-        const contents = try file.readToEndAlloc(self.allocator, file_size);
-        defer self.allocator.free(contents);
-
-        const parsed = try std.json.parseFromSlice([]Note, self.allocator, contents, .{});
-        defer parsed.deinit();
-
-        const result: []Note = parsed.value;
-
-        try self.reconstruct(result);
-    }
-
-    pub fn deinit(self: *Self) void {
-        const alloc = self.allocator;
-        for (self.items.slice()) |*note| {
-            alloc.free(note.title);
-            alloc.free(note.description);
-        }
-    }
-
-    fn reconstruct(self: *Self, notes: []const Note) !void {
-        var max_id: u8 = 0;
-
-        for (notes) |note| {
-            if (note.id > max_id) max_id = note.id;
-            const title_cpy = try self.allocator.dupe(u8, note.title);
-            const desc_cpy = try self.allocator.dupe(u8, note.description);
-
-            try self.items.append(.{
-                .id = note.id,
-                .title = title_cpy,
-                .description = desc_cpy,
-            });
-        }
-
-        self.next_id = max_id + 1;
-    }
+    // other notebook functions
 };
 ```
-YEhhh umm it does a lot, but i think it makes sense
 So i have `notebook.zig` like be the main data holder of the data so its basically like a singleton? because i have it initialized itself in the same file so yeh.
 
 Overall yeh it's very cool having to like structure this and stuff and think about how to design stuff in zig yknow. Fun experience.
@@ -285,53 +122,8 @@ pub const Command = struct {
 ```
 soo pretty usual, and i had chatgpt help me come with this so i can execute the command without doing a bunch of if statements because each command has itself a pointer to their function that does the operation soo in `parser.zig` all i had to do was call one function and it know which command to execute w/o doing a bunch of checks for the name of the command and all.
 
-my commands database:
-```zig
-pub const commands = [_]Command{
-    .{
-        .name = "-add",
-        .description = "Add a new todo",
-        .params = "<title> <desc?>",
-        .min_args = 1,
-        .max_args = 2,
-        .handler = &cmdAdd,
-    },
-    .{
-        .name = "-remove",
-        .params = "<note ID>",
-        .description = "Remove a todo by ID",
-        .min_args = 1,
-        .max_args = 1,
-        .handler = &cmdRemove,
-    },
-    .{
-        .name = "-edit",
-        .params = "<note ID>\n<title|description> <new value>",
-        .description = "Edit a note field",
-        .min_args = 3,
-        .max_args = 3,
-        .handler = &cmdEdit,
-    },
-    .{
-        .name = "-list",
-        .description = "List all todos",
-        .params = "",
-        .min_args = 0,
-        .max_args = 0,
-        .handler = &cmdList,
-    },
-    .{
-        .name = "-help",
-        .description = "Show help",
-        .params = "",
-        .min_args = 0,
-        .max_args = 0,
-        .handler = &cmdHelp,
-    },
-};
-```
-
-sooo basically i had to check the name of the command i typed with this function in `commands.zig`:
+I have a database of commands initialized and used.
+Sooo basically i had to check the name of the command i typed with this function in `commands.zig`:
 
 ```zig
 pub fn findCommand(name: []const u8) ?*const Command {
@@ -384,9 +176,4 @@ Hello so i was originally going to make the way to store the data into a row-lev
 
 #### TODO
 - [x] Change page_allocator to GeneralPurposeAllocator
-- [ ] Implement multiple notebooks support
-
-[^1]: SLICES IN ZIG
-	Note that a slice is just a ptr, and a len, it doesnt own the memory, its just a view to the point in memory where the actual value is stored REMEMBER THIS, thats why any like slice operations that you would want to live outside its scope, i.e when you want the slice to keep pointing at it even after the function where it was called ends or even though its done using in the scope but you want to use it in another scope, make sure you store it in the heap and allocate it.
-	
-
+- [x] Implement multiple notebooks support

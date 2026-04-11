@@ -7,8 +7,16 @@
 <ThemeInitializer>
 	<div class="mx-auto flex max-w-7xl gap-2">
 		<MainHeader />
-		<main class=" prose max-w-none grow overflow-x-auto pt-22 pb-8 dark:prose-invert">
+		<main class="prose max-w-none grow overflow-x-auto pt-22 pb-8 dark:prose-invert">
 			<slot />
 		</main>
 	</div>
 </ThemeInitializer>
+
+<!-- <style> -->
+<!-- 	@font-face { -->
+<!-- 		font-family: 'Junicode'; -->
+<!-- 		font-style: normal; -->
+<!-- 		src: url($lib/fonts/Junicode-Regular.woff2); -->
+<!-- 	} -->
+<!-- </style> -->
